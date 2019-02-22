@@ -1,0 +1,50 @@
+{
+    "$schema": "http://json.schemastore.org/template",
+    "author": "UD",
+    "classifications": [
+        "AWS",
+        "Lambda",
+        "Function"
+    ],
+    "name": "Lambda Function",
+    "identity": "UD.Lambda.Template.LambdaFunction",
+    "groupIdentity": "UD.Lambda.Template.LambdaFunction.CSharp",
+    "shortName": "ud.LambdaFunction",
+    "tags": {
+        "language": "C#",
+        "type": "project"
+    },
+    "sourceName": "FunctionProject",
+    "preferNameDirectory": true,
+    "symbols": {
+        "EventType": {
+            "type": "parameter",
+            "description": "The type of AWS event source your lambda will handle",
+            "isRequired": true,
+            "datatype": "choice",
+            "replaces": "SQSEvent",
+            "defaultValue": "SQSEvent",
+            "choices": [
+                {
+                    "choice": "DynamoDBEvent",
+                    "description": "A DynamoDB Stream Event"
+                },
+                {
+                    "choice": "KinesisEvent",
+                    "description": "A Kinesis Event"
+                },
+                {
+                    "choice": "S3Event",
+                    "description": "An S3 Event"
+                },
+                {
+                    "choice": "SQSEvent",
+                    "description": "An SQS Event"
+                }
+            ]
+        }
+    },
+    "primaryOutputs": [
+        { "path": "./src/Function.csproj" }
+    ]
+}

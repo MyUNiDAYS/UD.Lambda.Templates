@@ -1,0 +1,22 @@
+{
+    "$schema": "http://json.schemastore.org/template",
+    "author": "UD",
+    "classifications": [
+        "AWS",
+        "Lambda",
+        "Function"
+    ],
+    "name": "Api Function",
+    "identity": "UD.Lambda.Template.ApiFunction",
+    "groupIdentity": "UD.Lambda.Template.ApiFunction.CSharp",
+    "shortName": "ud.ApiFunction",
+    "tags": {
+        "language": "C#",
+        "type": "project"
+    },
+    "sourceName": "FunctionProject",
+    "preferNameDirectory": true,
+    "primaryOutputs": [
+        { "path": "./src/Function.csproj" }
+    ]
+}
