@@ -1,0 +1,33 @@
+version: 2.1
+jobs:
+  build-templates:
+    docker:
+      - image: mcr.microsoft.com/dotnet/core/sdk:2.1
+    steps:
+      - checkout
+      - run:
+          name: Install Mono
+          command: |
+            apt update &&
+            apt install -y apt-transport-https dirmngr gnupg ca-certificates &&
+            apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF &&
+            echo "deb https://download.mono-project.com/repo/debian stable-stretch main" | tee /etc/apt/sources.list.d/mono-official-stable.list &&
+            apt update &&
+            apt install -y mono-devel
+      - run:
+          name: Download nuget CLI
+          command: curl -o /usr/local/bin/nuget.exe https://dist.nuget.org/win-x86-commandline/latest/nuget.exe
+      - run:
+          name: Build and test templates
+          command: dotnet test -c Release
+      - run:
+          name: Package templates
+          command: /usr/local/bin/nuget.exe pack ./UD.Lambda.Templates.nuspec
+      - run:
+          name: Push package to MyGet
+          command: dotnet nuget push ./UD.Lambda.Templates.nupkg -s https://www.myget.org/F/unidays-release/api/v2/package -k $MYGET_API_KEY
+workflows:
+  version: 2
+  build-publish:
+    jobs:
+      - build-templates
