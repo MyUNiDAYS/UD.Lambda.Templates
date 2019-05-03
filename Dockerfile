@@ -11,4 +11,4 @@ RUN apt update && \
 
 # Install nuget executable
 RUN curl -o /usr/local/bin/nuget.exe https://dist.nuget.org/win-x86-commandline/latest/nuget.exe && \
-    echo 'alias nuget="mono /usr/local/bin/nuget.exe"' >> ~/.bashrc
+    echo '#!/bin/bash\nmono /usr/local/bin/nuget.exe "$@"' > /usr/local/bin/nuget && chmod u+x /usr/local/bin/nuget
