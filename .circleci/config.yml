@@ -48,9 +48,9 @@ jobs:
       - run:
           name: Build and test
           working_directory: << parameters.workspace_root >>
-          command: |            
-            dotnet test -c Release -l trx -r ./artifacts
+          command: |          
             dotnet build << parameters.template-path >> -c Release
+            dotnet test -c Release -l trx -r ./artifacts
       - persist_to_workspace:
           root: << parameters.workspace_root >> 
           paths:
