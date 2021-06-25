@@ -22,9 +22,10 @@ jobs:
             then
               echo "No Git tag present, will do nothing"
             else
+              VERSION_SUFFIX_TIMESTAMP="$(date '+%Y%m%d%H%M%S')"
               VERSION="${CIRCLE_TAG//v/}"
-              dotnet pack -c Release --no-build -p:PackageVersion=$VERSION<<#parameters.pre-release>>-beta<</parameters.pre-release>> -o $HOME/<<parameters.nuget-output-path>> <<parameters.template-path>> 
-              for f in $HOME/<<parameters.nuget-output-path>>/*.nupkg; do dotnet nuget push $f -s https://www.myget.org/F/unidays-release/api/v2/package -k $NUGET_APIKEY; done
+              dotnet pack -c Release --no-build -p:PackageVersion=$VERSION<<#parameters.pre-release>>-beta.$VERSION_SUFFIX_TIMESTAMP<</parameters.pre-release>> -o ./<<parameters.nuget-output-path>> <<parameters.template-path>> 
+              for f in ./<<parameters.nuget-output-path>>/*.nupkg; do dotnet nuget push $f -s https://www.myget.org/F/unidays-release/api/v2/package -k $NUGET_APIKEY; done
             fi
 
   build-templates:
@@ -49,12 +50,13 @@ jobs:
           working_directory: << parameters.workspace_root >>
           command: |            
             dotnet test -c Release -l trx -r ./artifacts
-            dotnet publish UD.Lambda.Templates.csproj -c Release -o ./publish
+            dotnet build << parameters.template-path >> -c Release
       - persist_to_workspace:
           root: << parameters.workspace_root >> 
           paths:
-            - UD.Lambda.Templates.csproj
-            - publish
+            - << parameters.template-path >>
+            - obj
+            - bin
       - run:
           name: Convert test results
           working_directory: << parameters.workspace_root >>
