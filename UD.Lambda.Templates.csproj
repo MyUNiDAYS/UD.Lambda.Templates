@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <PackageType>Template</PackageType>
+    <PackageVersion>1.0</PackageVersion>
+    <PackageId>UD.AWS.Lambda.Templates</PackageId>
+    <Title>UNiDAYS AWS Lambda Templates</Title>
+    <Authors>UNiDAYS</Authors>
+    <Description>UNiDAYS AWS Lambda Templates</Description>
+    <PackageTags>dotnet-new;templates;contoso</PackageTags>
+
+    <TargetFramework>netstandard2.1</TargetFramework>
+
+    <IncludeContentInPack>true</IncludeContentInPack>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <ContentTargetFolders>content</ContentTargetFolders>
+    <NoWarn>$(NoWarn);NU5128</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="templates\**\*" Exclude="templates\**\bin\**;templates\**\obj\**" />
+    <Compile Remove="**\*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove=".editorconfig" />
+    <None Remove="Dockerfile" />
+    <None Remove=".gitignore" />
+  </ItemGroup>
+
+</Project>

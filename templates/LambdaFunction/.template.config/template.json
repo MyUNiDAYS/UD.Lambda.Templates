@@ -9,7 +9,7 @@
     "name": "Lambda Function",
     "identity": "UD.Lambda.Template.LambdaFunction",
     "groupIdentity": "UD.Lambda.Template.LambdaFunction.CSharp",
-    "shortName": "ud.LambdaFunction",
+    "shortName": "UD.LambdaFunction",
     "tags": {
         "language": "C#",
         "type": "project"
