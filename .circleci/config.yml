@@ -1,21 +1,94 @@
 version: 2.1
+
 jobs:
+  pack-and-publish-nuget:
+    docker:
+      - image: mcr.microsoft.com/dotnet/sdk:3.1
+    parameters:
+      template-path:
+        description: Path of the template Project that needs building
+        type: string    
+      nuget-output-path:
+        description: Output location of Nuget NUPKG
+        type: string
+        default: nupk_output
+      pre-release:
+        description: Is Pre-release?
+        type: boolean
+        default: true
+    steps:
+      - run:
+          if [ -z "$CIRCLE_TAG" ]
+            then
+              echo "No Git tag present, will do nothing"
+            else
+              VERSION_SUFFIX_TIMESTAMP="$(date '+%Y%m%d%H%M%S')"
+              VERSION="${CIRCLE_TAG//v/}"
+              dotnet pack -c Release --no-build -p:PackageVersion=$VERSION<<#parameters.pre-release>>-beta.$VERSION_SUFFIX_TIMESTAMP<</parameters.pre-release>> -o ./<<parameters.nuget-output-path>> <<parameters.template-path>> 
+              for f in ./<<parameters.nuget-output-path>>/*.nupkg; do dotnet nuget push $f -s https://www.myget.org/F/unidays-release/api/v2/package -k $NUGET_APIKEY; done
+            fi
+
   build-templates:
     docker:
-      - image: unidays/dotnet-core-sdk-nuget:2.2
+      - image: mcr.microsoft.com/dotnet/sdk:3.1
+    parameters:
+      template-path:
+        description: Path of Project/Solution that houses the templates
+        type: string
+      workspace_root:
+        type: string
+        default: .
     steps:
       - checkout
       - run:
-          name: Build and test templates
-          command: dotnet test -c Release
+          name: Create Environment
+          command: |
+            cd << parameters.workspace_root >> 
+            dotnet tool install --tool-path . trx2junit
       - run:
-          name: Package templates
-          command: nuget pack ./UD.Lambda.Templates.nuspec
+          name: Build and test
+          working_directory: << parameters.workspace_root >>
+          command: |          
+            dotnet build << parameters.template-path >> -c Release
+            dotnet test -c Release -l trx -r ./artifacts
+      - persist_to_workspace:
+          root: << parameters.workspace_root >> 
+          paths:
+            - << parameters.template-path >>
+            - obj
+            - bin
       - run:
-          name: Push package to MyGet
-          command: find . -iname "*.nupkg" -exec dotnet nuget push '{}' -s https://www.myget.org/F/unidays-release/api/v2/package -k $MYGET_API_KEY \;
+          name: Convert test results
+          working_directory: << parameters.workspace_root >>
+          command: ./trx2junit ./artifacts/*.trx
+          when: always
+      - store_test_results:
+          path: << parameters.workspace_root >>/artifacts/  
+
 workflows:
-  version: 2
-  build-publish:
+  version: 2.1
+  build-templates-prerelease:
     jobs:
-      - build-templates
+      - build-templates:
+          template-path: UD.Lambda.Templates.csproj
+          filters: 
+              branches:
+                ignore: master
+      - pack-and-publish-nuget:
+          template-path: UD.Lambda.Templates.csproj
+          pre-release: true
+          requires:
+            - build-templates
+
+  build-templates-release:
+    jobs:
+      - build-templates:
+          template-path: UD.Lambda.Templates.csproj
+          filters: 
+              branches:
+                only: master
+      - pack-and-publish-nuget:
+          template-path: UD.Lambda.Templates.csproj
+          pre-release: false
+          requires:
+            - build-templates
